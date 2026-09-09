@@ -1,15 +1,25 @@
 'use client';
 
+import { Input } from '@base-ui/react';
 import { ArrowLeftToLine, ArrowRightToLine, Plus, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { startTransition, useState } from 'react';
 import Logo from '../logo/logo';
 import { Button } from '../ui/button';
+import type { PromptSummary } from '@/core/domain/prompts/prompt.entity';
+import PromptList from '../prompts/prompt-list';
 
-export default function SidebarContent() {
+export type SidebarContentProps = {
+  prompts: PromptSummary[];
+};
+
+export default function SidebarContent({ prompts }: SidebarContentProps) {
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [query, setQuery] = useState(searchParams.get('q') ?? '');
 
   function collapseSidebar() {
     setIsCollapsed(true);
@@ -21,6 +31,17 @@ export default function SidebarContent() {
 
   function handleNewPrompt() {
     router.push('/new');
+  }
+
+  function handleQueryChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const newQuery = event.target.value;
+    setQuery(newQuery);
+
+    startTransition(() => {
+      const url = newQuery ? `/?q=${encodeURIComponent(newQuery)}` : '/';
+
+      router.push(url, { scroll: false });
+    });
   }
 
   return (
@@ -42,46 +63,59 @@ export default function SidebarContent() {
       )}
 
       {!isCollapsed && (
-        <>
-          <section className="p-6">
-            <div className="md:hidden mb-4">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant={'secondary'}
-                  aria-label="Fechar menu"
-                  title="Fechar menu"
-                >
-                  <X className="w-5 h-5 text-gray-100" />
-                </Button>
-              </div>
-            </div>
-            <div className="flex w-full items-center justify-between mb-6">
-              <header className="flex w-full items-center justify-between">
-                <Logo />
-                <Button
-                  onClick={collapseSidebar}
-                  variant={'icon'}
-                  className={'hidden md:inline-flex p-8 hover:bg-gray-700 focus:outlinr-nonr focus:ring-2 focus-ring-accent-500 rounded-lg transition-colors'}
-                  title="Minimizar sidebar"
-                  aria-label="Minimizar sidebar"
-                >
-                  <ArrowLeftToLine className="w-5 h-5 text-gray-50" />
-                </Button>
-              </header>
-            </div>
-            <div>
+        <section className="p-6">
+          <div className="md:hidden mb-4">
+            <div className="flex items-center justify-between">
               <Button
-                onClick={handleNewPrompt}
-                className={'w-full'}
-                size={'lg'}
+                variant={'secondary'}
+                aria-label="Fechar menu"
+                title="Fechar menu"
               >
-                <Plus className="w-5 h-5 mr-2" />
-                Novo prompt
+                <X className="w-5 h-5 text-gray-100" />
               </Button>
             </div>
+          </div>
+          <div className="flex w-full items-center justify-between mb-6">
+            <header className="flex w-full items-center justify-between">
+              <Logo />
+              <Button
+                onClick={collapseSidebar}
+                variant={'icon'}
+                className={'hidden md:inline-flex p-8 hover:bg-gray-700 focus:outlinr-nonr focus:ring-2 focus-ring-accent-500 rounded-lg transition-colors'}
+                title="Minimizar sidebar"
+                aria-label="Minimizar sidebar"
+              >
+                <ArrowLeftToLine className="w-5 h-5 text-gray-50" />
+              </Button>
+            </header>
+          </div>
+
+          <section className="mb-5">
+            <form action="">
+              <Input
+                name="q"
+                value={query}
+                type="text"
+                placeholder="Buscar prompts..."
+                onChange={handleQueryChange}
+                autoFocus
+                className={'w-full p-2 border border-muted/20 rounded-md'}
+              />
+            </form>
           </section>
-        </>
+          <div>
+            <Button
+              onClick={handleNewPrompt}
+              className={'w-full'}
+              size={'lg'}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Novo prompt
+            </Button>
+          </div>
+        </section>
       )}
+      <PromptList prompts={prompts} />
     </aside>
   );
 }
