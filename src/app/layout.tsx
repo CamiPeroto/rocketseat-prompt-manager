@@ -13,19 +13,18 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '700']
 });
+
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${inter.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-900 text-white ">
-        <section className="flex h-screen">
-          <Sidebar />
-          <main className="relative flex-1 overflow-auto min-w-0">
-            <div className="p-4 sm:p-6 md:p-8 max-w-full md:max-w-3xl mx-auto h-full">{children}</div>
-          </main>
-        </section>
+      <body className="h-screen flex  bg-gray-900 text-white">
+        <Sidebar />
+        <main className="relative flex-1 overflow-auto min-w-0">
+          <div className="p-4 sm:p-6 md:p-8 max-w-full md:max-w-3xl mx-auto h-full">{children}</div>
+        </main>
       </body>
     </html>
   );
